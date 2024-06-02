@@ -12,7 +12,7 @@ class TetrisGame:
     # Screen
     SCREEN_SCALE = 1
     SCREEN_WIDTH = SCREEN_SCALE * 600
-    SCREEN_HEIGHT = SCREEN_SCALE * 700
+    SCREEN_HEIGHT = SCREEN_SCALE * 600
     SCREEN_FPS = 60
 
     # Grid
@@ -88,6 +88,8 @@ class TetrisGame:
         self.x_current_tetromino = random.randint(0, self.NUM_COLS - self.current_tetromino.shape[1])
         self.y_current_tetromino = 0
         self.update_tetromines = False
+
+        self.score = 0
         
         self.game_alive = True
 
@@ -103,14 +105,14 @@ class TetrisGame:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.game_alive = False
-                if event.type == MOVE_DOWN:
-                    self.update_y_current_tetromino()
+                # if event.type == MOVE_DOWN:
+                #     self.update_y_current_tetromino()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        if self.x_current_tetromino > 0:
+                        if self.can_move_left():
                             self.x_current_tetromino -= 1
                     if event.key == pygame.K_RIGHT:
-                        if self.x_current_tetromino < self.NUM_COLS - self.current_tetromino.shape[1]:
+                        if self.can_move_right():
                             self.x_current_tetromino += 1
                     if event.key == pygame.K_UP:
                         self.rotate_tetromino()
@@ -145,11 +147,31 @@ class TetrisGame:
             self.screen.blit(text, text_rect)
             pygame.display.update()
 
+    def can_move_right(self):
+        for row in range(self.current_tetromino.shape[0]):
+            col = self.current_tetromino.shape[1] - 1
+            while self.current_tetromino[row][col] == 0:
+                col -= 1
+            if self.x_current_tetromino + col == self.NUM_COLS - 1 or self.grid[self.y_current_tetromino + row][self.x_current_tetromino + col + 1] != 0:
+                return False
+        return True
+    
+    def can_move_left(self):
+        for row in range(self.current_tetromino.shape[0]):
+            col = 0
+            while self.current_tetromino[row][col] == 0:
+                col += 1
+            if self.x_current_tetromino + col == 0 or self.grid[self.y_current_tetromino + row][self.x_current_tetromino + col - 1] != 0:
+                return False
+        return True
+            
+
     def check_full_row(self):
         for row in range(self.grid.shape[0]):
             if 0 not in self.grid[row]:
                 self.grid = np.delete(self.grid, row, 0)
                 self.grid = np.insert(self.grid, 0, np.zeros(self.grid.shape[1]), 0)
+                self.score += 10
 
     def update_y_current_tetromino(self):
         if self.check_collision():
@@ -208,8 +230,17 @@ class TetrisGame:
                 pygame.draw.rect(self.screen, self.TETROMINOES_COLORS[int(self.grid[row][col])], (col * self.GRID_SIZE, row * self.GRID_SIZE, self.GRID_SIZE, self.GRID_SIZE), 0)
                 
     def draw_next_tetromino_preview(self):
-        x = self.NUM_COLS * self.GRID_SIZE + 50
-        y = 100
+        x = self.SCREEN_WIDTH - (self.GRID_SIZE * self.NUM_COLS) // 2
+        y = self.GRID_SIZE * self.NUM_ROWS // 3
+
+        font = pygame.font.Font(None, 36)
+        text = font.render('Next Tetromino', True, self.COLOR_WHITE)
+        text_rect = text.get_rect(center=(x, y))
+        self.screen.blit(text, text_rect)
+
+        x = self.SCREEN_WIDTH - (self.GRID_SIZE * self.NUM_COLS) // 2 - self.GRID_SIZE * self.next_tetromino.shape[1] // 2
+        y += self.GRID_SIZE
+
         for row in range(self.next_tetromino.shape[0]):
             for col in range(self.next_tetromino.shape[1]):
                 if self.next_tetromino[row][col] != 0:
@@ -232,7 +263,6 @@ class TetrisGame:
             for col in range(self.current_tetromino.shape[1]):
                 if self.current_tetromino[row][col] != 0:
                     if self.grid[self.y_current_tetromino + row + 1][self.x_current_tetromino + col] != 0:
-                        print('collision')
                         return True
         return False
     
