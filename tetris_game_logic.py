@@ -51,6 +51,15 @@ class TetrisGameLogic:
         self.score = 0
         self.game_over = False
 
+    def new_game(self):
+        self.grid = np.zeros((self.NUM_ROWS, self.NUM_COLS), np.uint8)
+        self.next_tetromino = self._get_random_tetromino()
+        self.current_tetromino = self._get_random_tetromino()
+        self.current_tetromino_row = 0
+        self.current_tetromino_col = random.randint(0, self.NUM_COLS - self.current_tetromino.shape[1])
+        self.score = 0
+        self.game_over = False
+
     def get_state(self):
         next_tetromino = np.zeros((4, 4))
         next_tetromino[:self.next_tetromino.shape[0], :self.next_tetromino.shape[1]] = self.next_tetromino
@@ -103,7 +112,7 @@ class TetrisGameLogic:
         while new_col + rotated_tetromino.shape[1] > self.NUM_COLS:
             new_col -= 1
 
-        if self.current_tetromino_row + rotated_tetromino.shape[0] >= self.NUM_ROWS:
+        if self.current_tetromino_row + rotated_tetromino.shape[0] > self.NUM_ROWS:
             return
 
         for row in range(rotated_tetromino.shape[0]):
