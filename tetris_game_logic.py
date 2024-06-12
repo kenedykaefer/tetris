@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import time
 
 class TetrisGameLogic:
     # Grid
@@ -49,7 +50,22 @@ class TetrisGameLogic:
         self.current_tetromino_row = 0
         self.current_tetromino_col = random.randint(0, self.NUM_COLS - self.current_tetromino.shape[1])
         self.score = 0
+        self.running = False
         self.game_over = False
+        self._old_time = 0
+
+    def start_game(self):
+        self.running = True
+        self._old_time = time.time()
+
+    def _update(self):
+        if self.running:
+            time_elapsed = time.time() - self._old_time
+            if time_elapsed >= 1:
+                while time_elapsed >= 1:
+                    time_elapsed -= 1
+                    self._move_down()
+                self._old_time = time.time()
 
     def new_game(self):
         self.grid = np.zeros((self.NUM_ROWS, self.NUM_COLS), np.uint8)
@@ -61,6 +77,7 @@ class TetrisGameLogic:
         self.game_over = False
 
     def get_state(self):
+        self._update()
         next_tetromino = np.zeros((4, 4))
         next_tetromino[:self.next_tetromino.shape[0], :self.next_tetromino.shape[1]] = self.next_tetromino
         state = {
@@ -76,8 +93,8 @@ class TetrisGameLogic:
     
     def get_grid_shape(self):
         return self.grid.shape
-
-    def move_tetromino_down(self):
+    
+    def _move_down(self):
         if self._check_collision():
             self._add_tetromino_to_grid()
             self._check_full_rows()
@@ -88,7 +105,26 @@ class TetrisGameLogic:
             self.current_tetromino_row += 1
             return True
         
+    def move_tetromino_hard_drop(self):
+        if self.game_over:
+            return
+        self._update()
+        while self._move_down():
+            pass
+        self._old_time = time.time()
+
+    def move_tetromino_down(self):
+        if self.game_over:
+            return False
+        self._update()
+        move = self._move_down()
+        self._old_time = time.time()
+        return move
+        
     def move_tetromino_left(self):
+        if self.game_over:
+            return
+        self._update()
         for row in range(self.current_tetromino.shape[0]):
             col = 0
             while self.current_tetromino[row][col] == 0:
@@ -98,6 +134,9 @@ class TetrisGameLogic:
         self.current_tetromino_col -= 1
 
     def move_tetromino_right(self):
+        if self.game_over:
+            return
+        self._update()
         for row in range(self.current_tetromino.shape[0]):
             col = self.current_tetromino.shape[1] - 1
             while self.current_tetromino[row][col] == 0:
@@ -107,6 +146,9 @@ class TetrisGameLogic:
         self.current_tetromino_col += 1
 
     def rotate_tetromino(self):
+        if self.game_over:
+            return
+        self._update()
         rotated_tetromino = np.rot90(self.current_tetromino)
         new_col = self.current_tetromino_col
         while new_col + rotated_tetromino.shape[1] > self.NUM_COLS:
@@ -155,6 +197,8 @@ class TetrisGameLogic:
                 if self.current_tetromino[row][col] != 0:
                     if self.grid[self.current_tetromino_row + row][self.current_tetromino_col + col] != 0:
                         self.game_over = True
+                        self.running = False
+                        return
             
     def _spawn_new_tetromino(self): # Spawn a new tetromino at the top of the grid
         self.current_tetromino = self.next_tetromino

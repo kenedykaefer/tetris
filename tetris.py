@@ -11,9 +11,8 @@ def main():
     user = tui.TetrisUserInput()
 
     quit = False
-    down_end = False
-    last_time = 0
 
+    tetris_game.start_game()
     while not quit:
         while not tetris_game.game_over and not quit:
             tetris_renderer.render(tetris_game.get_state())
@@ -30,12 +29,7 @@ def main():
             elif tetris_input == 'rotate':
                 tetris_game.rotate_tetromino()
             elif tetris_input == 'space':
-                down_end = True
-
-            if down_end:
-                if time.time() - last_time > 0.05:
-                    down_end = tetris_game.move_tetromino_down()
-                    last_time = time.time()
+                tetris_game.move_tetromino_hard_drop()
 
         tetris_renderer.render(tetris_game.get_state())
         tetris_input = user.get_user_input()
@@ -43,6 +37,7 @@ def main():
             quit = True
         elif tetris_input == 'new_game':
             tetris_game.new_game()
+            tetris_game.start_game()
 
     pygame.quit()        
         
