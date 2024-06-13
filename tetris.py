@@ -12,7 +12,6 @@ def main():
 
     quit = False
 
-    tetris_game.start_game()
     while not quit:
         while not tetris_game.game_over and not quit:
             tetris_renderer.render(tetris_game.get_state())
@@ -37,7 +36,6 @@ def main():
             quit = True
         elif tetris_input == 'new_game':
             tetris_game.new_game()
-            tetris_game.start_game()
 
     pygame.quit()        
         
