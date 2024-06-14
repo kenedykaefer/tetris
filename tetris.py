@@ -1,7 +1,6 @@
 import tetris_game_logic as tgl
 import tetris_render as tr
 import pygame
-import time
 import tetris_user_input as tui
 
 def main():
@@ -17,24 +16,24 @@ def main():
             tetris_renderer.render(tetris_game.get_state())
             tetris_input = user.get_user_input()
 
-            if tetris_input == 'quit':
+            if tetris_input == user.UserInput.QUIT:
                 quit = True
-            elif tetris_input == 'left':
+            elif tetris_input == user.UserInput.LEFT:
                 tetris_game.move_tetromino_left()
-            elif tetris_input == 'right':
+            elif tetris_input == user.UserInput.RIGHT:
                 tetris_game.move_tetromino_right()
-            elif tetris_input == 'down':
+            elif tetris_input == user.UserInput.DOWN:
                 tetris_game.move_tetromino_down()
-            elif tetris_input == 'rotate':
+            elif tetris_input == user.UserInput.ROTATE:
                 tetris_game.rotate_tetromino()
-            elif tetris_input == 'space':
+            elif tetris_input == user.UserInput.HARD_DROP:
                 tetris_game.move_tetromino_hard_drop()
 
         tetris_renderer.render(tetris_game.get_state())
         tetris_input = user.get_user_input()
-        if tetris_input == 'quit':
+        if tetris_input == user.UserInput.QUIT:
             quit = True
-        elif tetris_input == 'new_game':
+        elif tetris_input == user.UserInput.NEW_GAME:
             tetris_game.new_game()
 
     pygame.quit()        
