@@ -10,7 +10,7 @@ def main():
     user = tui.TetrisUserInput()
 
     quit = False
-
+    old_reward = 0
     while not quit:
         while not tetris_game.game_over and not quit:
             tetris_renderer.render(tetris_game.get_state())
@@ -28,6 +28,11 @@ def main():
                 tetris_game.rotate_tetromino()
             elif tetris_input == user.UserInput.HARD_DROP:
                 tetris_game.move_tetromino_hard_drop()
+
+            new_reward = tgl.get_future_reward(tetris_game)
+            if new_reward != old_reward:
+                print(new_reward)
+                old = new_reward
 
         tetris_renderer.render(tetris_game.get_state())
         tetris_input = user.get_user_input()
